@@ -1,0 +1,49 @@
+main { width: min(92vw, 380px); padding: 16px 0; text-align: center; }
+h1 { margin: 0 0 12px; font-size: 1.8rem; }
+
+.modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+.modes button, .actions button {
+  border: 1px solid var(--line); background: var(--card); color: var(--text);
+  padding: 8px 14px; border-radius: 999px; font: inherit; cursor: pointer;
+  transition: transform 0.1s;
+}
+.modes button:active, .actions button:active { transform: scale(0.95); }
+.modes button[aria-pressed='true'] { background: var(--x); color: #fff; border-color: var(--x); }
+
+.status { min-height: 1.6em; margin: 8px 0 12px; font-weight: 600; }
+.status.over { animation: pulse 0.6s ease 2; }
+
+.board {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  background: var(--line); padding: 8px; border-radius: 16px;
+}
+.cell {
+  aspect-ratio: 1; border: 0; border-radius: 10px; background: var(--card);
+  font-size: clamp(2.5rem, 16vw, 4rem); font-weight: 700; cursor: pointer;
+  color: var(--text); transition: background 0.2s, transform 0.1s;
+}
+.cell:not(:disabled):hover { transform: scale(1.04); }
+.cell:disabled { cursor: default; }
+.cell.x { color: var(--x); }
+.cell.o { color: var(--o); }
+.cell .mark { display: inline-block; animation: pop 0.25s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.cell.win { background: var(--win); animation: pulse 0.7s ease infinite; }
+
+.score { display: flex; justify-content: space-around; margin: 16px 0; color: var(--muted); }
+.score strong { display: block; font-size: 1.5rem; color: var(--text); }
+.actions { display: flex; gap: 8px; justify-content: center; }
+
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.confetti span {
+  position: absolute; top: -12px; width: 10px; height: 14px; border-radius: 2px;
+  animation: fall 1.8s ease-in forwards;
+}
+
+@keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0.8; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cell .mark, .cell.win, .status.over, .confetti span { animation: none; }
+  .confetti { display: none; }
+}
