@@ -4,6 +4,7 @@ import Scoreboard from './components/Scoreboard'
 import ModeToggle from './components/ModeToggle'
 import { cpuMove, getWinner } from './lib/game'
 import { playDraw, playMove, playWin } from './lib/sound'
+import { loadScore, saveGame } from './lib/storage'
 import './App.css'
 
 const EMPTY = Array(9).fill('')
@@ -17,6 +18,8 @@ export default function App() {
   const [muted, setMuted] = useState(false)
   const mutedRef = useRef(muted)
   mutedRef.current = muted
+  const movesRef = useRef([])
+  const startRef = useRef(0)
 
   const result = getWinner(cells)
   const draw = !result && cells.every(Boolean)
@@ -36,11 +39,23 @@ export default function App() {
     const next = cells.slice()
     next[i] = player
     setCells(next)
+    if (!movesRef.current.length) startRef.current = Date.now()
+    movesRef.current.push({ player, cell: i })
     const w = getWinner(next)
+    const full = next.every(Boolean)
+    if (w || full) {
+      saveGame({
+        mode: vsCpu ? 'cpu' : 'pvp',
+        winner: w ? w.player : 'draw',
+        winningLine: w ? w.line : null,
+        moves: movesRef.current,
+        durationMs: Date.now() - startRef.current,
+      })
+    }
     if (w) {
       setScore((s) => ({ ...s, [w.player]: s[w.player] + 1 }))
       sound(playWin)
-    } else if (next.every(Boolean)) {
+    } else if (full) {
       setScore((s) => ({ ...s, D: s.D + 1 }))
       sound(playDraw)
     } else {
@@ -56,7 +71,12 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cpuTurn, cells])
 
+  useEffect(() => {
+    loadScore().then((s) => s && setScore(s))
+  }, [])
+
   function reset() {
+    movesRef.current = []
     setCells(EMPTY)
     setTurn('X')
   }
